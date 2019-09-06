@@ -9,7 +9,7 @@ import cv2
 # img_src = sys.argv[1]
 # option = sys.argv[2]
 
-img = cv2.imread("baboon.png",cv2.IMREAD_GRAYSCALE)
+img = cv2.imread("images/baboon.png",cv2.IMREAD_GRAYSCALE)
 plt.imshow(img, cmap='gray')
 plt.show()
 i_max = len(img)
@@ -92,4 +92,3 @@ else:
 
 plt.imshow(new_img, cmap='gray')
 plt.show()
-misc.imsave('out.bmp',new_img)
