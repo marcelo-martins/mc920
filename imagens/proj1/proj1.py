@@ -151,7 +151,7 @@ def testStraightGray(title, matrixGray, filtro, filterName):
 
     #Cutting border out
     matrixFinal = matrixGray[bordersize:matrixGray.shape[1]-bordersize,bordersize:matrixGray.shape[0]-bordersize].copy()
-    cv2.imwrite(title + 'GrayStraight' + filterName + '.png', matrixFinal)
+    cv2.imwrite(title + 'GrayStraight' + filterName + '.png', cv2.bitwise_not(matrixFinal))
 
 def testSnakesGray(title, matrixGray, filtro, filterName):
 
@@ -162,7 +162,7 @@ def testSnakesGray(title, matrixGray, filtro, filterName):
 
     #Cutting border out
     matrixFinal = matrixGray[bordersize:matrixGray.shape[1]-bordersize,bordersize:matrixGray.shape[0]-bordersize].copy()
-    cv2.imwrite(title + 'GraySnake' + filterName + '.png', matrixFinal)
+    cv2.imwrite(title + 'GraySnake' + filterName + '.png', cv2.bitwise_not(matrixFinal))
 
 
 #These functions iterate through all images and filters
