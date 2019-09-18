@@ -30,7 +30,7 @@ def globalMethod(img):# 0 is height, 1 is weight but 0 is y and weight is x
 
     #final = np.where(final < 128, 0, 255)
     
-def niblack(img): #higher than T is black, otherwise is white
+def bernsen(img): #higher than T is black, otherwise is white
 
     final = img.copy()    
     for y in range(1, img.shape[0]-1): #ignoring borders
@@ -62,4 +62,4 @@ if __name__ == '__main__':
     if(opt==1):
         globalMethod(img)
     if(opt==2):
-        niblack(img)
+        bernsen(img)
