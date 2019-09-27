@@ -25,7 +25,7 @@ def get_parser():
 def plotAndSave(method, black, size, img, final, mask=3):
     black = format((black*100/size), ".2f")
     plt.hist(img.ravel(),256,[0,256])
-    cv2.imwrite(f"{method}_{mask}x{mask}.png", final) #change format to png
+    #cv2.imwrite(f"{method}_{mask}x{mask}.png", final) #change format to png
     plt.savefig(f"{method}_histogram_{mask}x{mask}_{black}%black.png")
 
 def initializeLocalMethod(mask, img):
@@ -207,7 +207,7 @@ def getImages(image_dir):
 if __name__ == '__main__':
     
     arguments = get_parser()
-    #img = cv2.imread('imagens/fiducial.pgm', cv2.IMREAD_UNCHANGED)
+    img = cv2.imread('imagens/sonnet.pgm', cv2.IMREAD_UNCHANGED)
 
     opt = int(arguments.option)
     mask = int(arguments.mask)
@@ -217,33 +217,34 @@ if __name__ == '__main__':
     count = 0
     opt = 1
     mask = 3
-    for i in range(len(data)):
-        img = data[i]
-        nome = names[i]
-        while(True):
-            if(opt==1):
-                globalMethod(img, nome)
-            elif(opt==2):
-                bernsen(img, mask, nome)
-            elif(opt==3):
-                niblack(img, mask, nome)
-            elif(opt==4):
-                sauvola(img, mask, nome)
-            elif(opt==5):
-                sabale(img, mask, nome)
-            elif(opt==6):
-                contrast(img, mask, nome)
-            elif(opt==7):
-                mean(img, mask, nome)
-            elif(opt==8):
-                mediana(img, mask, nome)
-            else:
-                mask+=2
-                opt = 1
-                if(mask==9):
-                    mask=3
-                    break
-            opt += 1
+    # for i in range(len(data)):
+    #     img = data[i]
+    #     nome = names[i]
+    nome = "sonnet"
+    while(True):
+        if(opt==1):
+            globalMethod(img, nome)
+        elif(opt==2):
+            bernsen(img, mask, nome)
+        elif(opt==3):
+            niblack(img, mask, nome)
+        elif(opt==4):
+            sauvola(img, mask, nome)
+        elif(opt==5):
+            sabale(img, mask, nome)
+        elif(opt==6):
+            contrast(img, mask, nome)
+        elif(opt==7):
+            mean(img, mask, nome)
+        elif(opt==8):
+            mediana(img, mask, nome)
+        else:
+            mask+=2
+            opt = 1
+            if(mask==9):
+                #mask=3
+                break
+        opt += 1
 
     # if(opt==1):
     #     globalMethod(img)
