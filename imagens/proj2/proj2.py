@@ -15,7 +15,7 @@ def get_parser():
     parser = argparse.ArgumentParser(description='Global and local filters testing', formatter_class=RawTextHelpFormatter)
     parser.add_argument('--folder', default = 'imagens/',
                         help='Folder where the image(s) are')#required = False é um argumento
-    parser.add_argument('--option', type=int, choices = range(1,10),
+    parser.add_argument('--option', type=int, choices = range(1,10), default = -1,
                         help = 'Choose filter you want to run\n1 : global\n2 : bernsen\n3 : niblack\n4 : sauvola\n'
                             + '5 : sabale\n6 : contrast\n7 : mean\n8 : median\n')
     parser.add_argument('--mask', type=int, choices = range(0,100), default = 3, metavar = 'range 1-100',
@@ -28,7 +28,8 @@ def get_parser():
 
 def plotAndSave(method, black, size, img, final, mask=3, hist = "y"):
     black = format((black*100/size), ".2f")
-    cv2.imwrite(f"{method}_{mask}x{mask}.png", final) #change format to png
+    if(hist != "y"): #-----------------------------------------------------------------------------------------------
+        cv2.imwrite(f"{method}_{mask}x{mask}.png", final) #change format to png
     if(hist.lower() == 'y'):
         plt.hist(img.ravel(),256,[0,256])
         plt.savefig(f"{method}_histogram_{mask}x{mask}_{black}%black.png")
@@ -38,7 +39,7 @@ def plotAndSave(method, black, size, img, final, mask=3, hist = "y"):
 def initializeLocalMethod(mask, img):
     borda = math.floor(mask/2)
     black = 0
-    size = (img.shape[0] - 2* borda) * (img.shape[1] - 2* borda)
+    size = img.shape[0] * img.shape[1] 
     final = img.copy()
     height = img.shape[0]
     width = img.shape[1]
@@ -64,7 +65,7 @@ def globalMethod(img, nome="nome", hist="y"):# 0 is height, 1 is weight but 0 is
     cv2.imwrite(f"{name}_global.png", final)
     if(hist.lower() == 'y'):
         plt.hist(img.ravel(),256,[0,256])
-        plt.savefig(f"global_histogram_{black}%black.png")
+        plt.savefig(f"{nome}_global_histogram_{black}%black.png")
     else:
         print(f"Percentage of black pixels = {black}%\n")
        
@@ -225,7 +226,9 @@ if __name__ == '__main__':
     img = cv2.imread(folder + name + '.pgm', cv2.IMREAD_UNCHANGED)
     hist = arguments.hist
 
-    if(opt==1):
+    if(opt == -1):
+        print("Please insert an option as --option opt")
+    elif(opt==1):
         globalMethod(img, name, hist)
     elif(opt==2):
         bernsen(img, mask, name, hist)
