@@ -4,9 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import warnings
-import os
-import glob
-import sys
 from argparse import RawTextHelpFormatter
 
 warnings.simplefilter("ignore")
@@ -27,10 +24,9 @@ def get_parser():
     return arguments
 
 def plotAndSave(method, black, size, img, final, mask=3, hist = "y"):
-    black = format((black*100/size), ".2f")
-    if(hist != "y"): #-----------------------------------------------------------------------------------------------
-        cv2.imwrite(f"{method}_{mask}x{mask}.png", final) #change format to png
-    if(hist.lower() == 'y'):
+    black = format((black*100/size), ".2f") #Getting percentage of black pixels
+    cv2.imwrite(f"{method}_{mask}x{mask}.png", final) #change format from to pgm to png
+    if(hist.lower() == 'y'):#Check if user wants to generate histogram
         plt.hist(img.ravel(),256,[0,256])
         plt.savefig(f"{method}_histogram_{mask}x{mask}_{black}%black.png")
     else:
@@ -46,7 +42,7 @@ def initializeLocalMethod(mask, img):
 
     return borda, black, size, final, height, width
 
-def globalMethod(img, nome="nome", hist="y"):# 0 is height, 1 is weight but 0 is y and weight is x
+def globalMethod(img, nome="nome", hist="y"):
     print("You chose global\n")
 
     final = img.copy() 
@@ -69,14 +65,14 @@ def globalMethod(img, nome="nome", hist="y"):# 0 is height, 1 is weight but 0 is
     else:
         print(f"Percentage of black pixels = {black}%\n")
        
-def bernsen(img, mask=3, nome="nome", hist="y"): #higher than T is black, otherwise is white
+def bernsen(img, mask=3, nome="nome", hist="y"): #higher or equal than result is white, otherwise is black for all methods
     print("You chose bernsen\n")
 
     borda, black, size, final, height, width = initializeLocalMethod(mask, img)
 
     for y in range(height):
         for x in range(width):
-            temp = img[max(0, y-borda) : min(y+borda+1, height), max(0, x-borda) : min(x+borda+1, width)]
+            temp = img[max(0, y-borda) : min(y+borda+1, height), max(0, x-borda) : min(x+borda+1, width)] #adjust mask
             maxValue = np.max(temp)
             minValue = np.min(temp)
             result = (maxValue.astype('float') + minValue.astype('float'))/2
@@ -91,7 +87,7 @@ def bernsen(img, mask=3, nome="nome", hist="y"): #higher than T is black, otherw
 def niblack(img, mask=3, nome="nome", hist="y"):
     print("You chose niblack\n")
 
-    k=0.2
+    k = 0.2
     borda, black, size, final, height, width = initializeLocalMethod(mask, img)
 
     for y in range(height):
@@ -205,27 +201,22 @@ def mediana(img, mask=3, nome="nome", hist="y"):
             
     plotAndSave(f"{nome}_mediana", black, size, img, final, mask, hist)
 
-def getImages(image_dir):
-    data_path = os.path.join(image_dir, '*g')
-    files = glob.glob(image_dir + "/*.pgm")
-    data=[]
-    names = []
-    for fl in files:
-        img = cv2.imread(fl, cv2.IMREAD_UNCHANGED)
-        data.append(img)
-        names.append(os.path.splitext(os.path.basename(fl))[0])
-    return data, names
-
 if __name__ == '__main__':
-    
+    #Getting arguments and reading image
     arguments = get_parser()
     opt = int(arguments.option)
     mask = int(arguments.mask)
     folder = arguments.folder
     name = arguments.image
-    img = cv2.imread(folder + name + '.pgm', cv2.IMREAD_UNCHANGED)
+    if ".pgm" not in name:
+        name+=".pgm"
+    img = cv2.imread(folder + name, cv2.IMREAD_UNCHANGED)
     hist = arguments.hist
 
+    #Options
+    '''All algorithms work the same way: run through the whole matrix getting the neighbourhood 
+    of each pixel and doing math with it'''
+    
     if(opt == -1):
         print("Please insert an option as --option opt")
     elif(opt==1):
