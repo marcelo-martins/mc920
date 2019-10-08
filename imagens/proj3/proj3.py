@@ -22,19 +22,46 @@ def get_parser():
 def plotAndSave(img, nome = "NaN", func = "NaF"):
     cv2.imwrite(f"{func}{nome}.png", img)
 
+def binaryImage(img, nome="NaN"):
+    final = img.copy() 
+
+    final = cv2.cvtColor(final, cv2.COLOR_BGR2GRAY)
+  
+    (thresh, final) = cv2.threshold(final, 254, 255, cv2.THRESH_BINARY)
+    plotAndSave(final, nome, "binary_")
+
 def grayscales(img, nome="NaN"):
     final = img.copy() 
 
     B, G, R = cv2.split(final)
-    final = 0.2989* R + 0.5870* G + 0.1140* B 
+    final = 0.2989* R + 0.5870* G + 0.1140* B  
     plotAndSave(final, nome, "grayscale_")
 
 def edge_detection(img, nome="NaN"):
     final = img.copy()
-    edges = cv2.Canny(final,100,200)
-    edges = cv2.bitwise_not(edges)
-    plotAndSave(edges, nome, "edges_")
+    v = np.median(final)
+    lower = int(max(0, (1.0 - 0.33) * v))
+    upper = int(min(255, (1.0 + 0.33) * v))
+    edges = cv2.Canny(final, lower, upper)
+    #edges = cv2.Canny(final,100,200)
+    plotAndSave(cv2.bitwise_not(edges), nome, "edges_")
 
+    return edges
+
+def contour_properties(img, nome="NaN"):
+    edges = edge_detection(img, nome)
+    contours, h = cv2.findContours(edges, 0, 1)
+    
+    print("Número de regiões: " + str(len(contours)) + "\n")
+    i=0
+    for cont in contours:
+        area = cv2.contourArea(cont)
+        perimeter = cv2.arcLength(cont, True)
+        hull = cv2.convexHull(cont)
+        hull_area = cv2.contourArea(hull)
+        solidity = float(area)/hull_area
+        print("Região " + str(i) + ": Área: " + str(format(round(area), "4.0f")) + " Perímetro:  " + str(format(perimeter, "3.6f")) + "  Solidez: " + str(format(solidity, "3.6f")))
+        i+=1
 if __name__ == '__main__':
     #Getting arguments and reading image
     arguments = get_parser()
@@ -52,8 +79,12 @@ if __name__ == '__main__':
     if(opt == -1):
         print("Please insert an option as --option opt")
     if(opt==1):
-        grayscales(img, name)
+        binaryImage(img, name)
     if(opt==2):
+        grayscales(img, name)
+    if(opt==3):
         edge_detection(img, name)
+    if(opt==4):
+        contour_properties(img, name)
     
         
