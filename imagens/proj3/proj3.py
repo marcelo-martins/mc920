@@ -145,5 +145,9 @@ if __name__ == '__main__':
         contour_properties(img, name)
     if(opt==5):
         hist(img, name)
-    
-        
+    if(opt==6):
+        binaryImage(img, name)
+        grayscales(img, name)
+        edge_detection(img, name)
+        contour_properties(img, name)
+        hist(img, name)
