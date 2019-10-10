@@ -11,10 +11,12 @@ warnings.simplefilter("ignore")
 def get_parser():
     parser = argparse.ArgumentParser(description='Global and local filters testing', formatter_class=RawTextHelpFormatter)
     parser.add_argument('--folder', default = 'imagens/',
-                        help='Folder where the image(s) are')#required = False é um argumento
-    parser.add_argument('--option', type=int, choices = range(1,10), default = -1,
-                        help = 'Choose option')
-    parser.add_argument('--image', default = "baboon", help = 'Choose name of the PGM image you want to run')
+                        help='Folder where the image(s) are')
+    parser.add_argument('--option', type=int, choices = range(1,7), default = -1,
+                        help = 'Choose option you want to run\n1 : binary\n2 : grayscale\n3 : detect_contours'
+                            + '\n4 : generate area, perimeter, eccentricity and solitidy\n'
+                            + '5 : generate area histogram\n6 : generate all expect for grayscale\n')
+    parser.add_argument('--image', default = "objetos3", help = 'Choose name of the PGM image you want to run')
 
     arguments = parser.parse_args()
     return arguments
@@ -39,7 +41,7 @@ def grayscales(img, nome="NaN", generate="y"):
 
     return final
 
-def edge_detection(img, nome="NaN", generate="y"):
+def detect_contours(img, nome="NaN", generate="y"):
     
     final = binaryImage(img, nome, "n").astype('uint8')
     contours, _ = cv2.findContours(final, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -50,7 +52,7 @@ def edge_detection(img, nome="NaN", generate="y"):
     return edges, contours
 
 def contour_properties(img, nome="NaN", printHist = "n"):
-    _, contours = edge_detection(img, nome, "n")
+    _, contours = detect_contours(img, nome, "n")
     edges = binaryImage(img.copy(), nome, "n")
     
     [peq, med, gra] = [0, 0, 0]
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     if(opt==2):
         grayscales(img, name)
     if(opt==3):
-        edge_detection(img, name)
+        detect_contours(img, name)
     if(opt==4):
         contour_properties(img, name)
     if(opt==5):
@@ -159,6 +161,6 @@ if __name__ == '__main__':
     if(opt==6):
         binaryImage(img, name)
         grayscales(img, name)
-        edge_detection(img, name)
+        detect_contours(img, name)
         contour_properties(img, name)
         hist(img, name)
