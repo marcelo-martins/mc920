@@ -56,7 +56,7 @@ def contour_properties(img, nome="NaN", printHist = "n"):
     [peq, med, gra] = [0, 0, 0]
     if printHist=="n":
         print("Número de regiões: " + str(len(contours)-1) + "\n")
-    
+
     i=0  
     for cont in (reversed(contours)):
         
@@ -74,7 +74,7 @@ def contour_properties(img, nome="NaN", printHist = "n"):
         hull_area = cv2.contourArea(hull)
         solidity = area/hull_area
 
-        (x, y), (MA, ma), angle = cv2.fitEllipse(cont)
+        (_, _), (MA, ma), _ = cv2.fitEllipse(cont)
         a = ma/2
         b = MA/2
         eccentricity = math.sqrt(pow(a, 2)-pow(b, 2))
@@ -84,6 +84,10 @@ def contour_properties(img, nome="NaN", printHist = "n"):
         if printHist=="n":
             print("Região {0:{1}d}: Área: {2:4.0f} Perímetro: {3:10.6f} Excentricidade: {4:10.6f} Solidez: {5:10.6f}"
                 .format(i, 8, area, perimeter, eccentricity, solidity))
+            f=open(f"out_{name}", "a+")
+            f.write("Região {0:{1}d}: Área: {2:4.0f} Perímetro: {3:10.6f} Excentricidade: {4:10.6f} Solidez: {5:10.6f}\n"
+                .format(i, 8, area, perimeter, eccentricity, solidity))
+            f.close()
             
         cx = int(M['m10']/M['m00'])
         cy = int(M['m01']/M['m00'])
@@ -94,8 +98,15 @@ def contour_properties(img, nome="NaN", printHist = "n"):
     
     if(printHist=="n"):
         plotAndSave(edges, nome, "numbers_")
+        f=open(f"out_{name}", "a+")
+        f.write("----------------------------------------------------------------\n")
+        f.close()
     else:
         print("número de regiões pequenas: " + str(peq) + "\nnúmero de regiões médias: " + str(med) + "\nnúmero de regiões grandes: " + str(gra))
+        f=open(f"out_{name}", "a+")
+        f.write("número de regiões pequenas: " + str(peq) + "\nnúmero de regiões médias: " + str(med) + "\nnúmero de regiões grandes: " + str(gra))
+        f.write("\n----------------------------------------------------------------\n")
+        f.close()
 
         x_titles = ('Pequenas', 'Médias', 'Grandes')
         y_pos = np.arange(len(x_titles))
