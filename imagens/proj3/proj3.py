@@ -59,7 +59,9 @@ def contour_properties(img, nome="NaN", printHist = "n"):
     if printHist=="n":
         print("Número de regiões: " + str(len(contours)-1) + "\n")
 
-    i=0  
+    i=0
+    max_area = 0
+    sizes = []
     for cont in (reversed(contours)):
         
         area = cv2.contourArea(cont)
@@ -69,6 +71,9 @@ def contour_properties(img, nome="NaN", printHist = "n"):
             med += 1
         else:
             gra += 1
+        if(area>max_area):
+            max_area = area
+        sizes.append(area)
 
         perimeter = cv2.arcLength(cont, True)
         
@@ -110,15 +115,10 @@ def contour_properties(img, nome="NaN", printHist = "n"):
         f.write("\n----------------------------------------------------------------\n")
         f.close()
 
-        x_titles = ('Pequenas', 'Médias', 'Grandes')
-        y_pos = np.arange(len(x_titles))
-        sizes = [peq, med, gra]
-
-        plt.bar(y_pos, sizes, align='center', alpha=1)
-        plt.xticks(y_pos, x_titles)
         plt.ylabel('Número de objetos')
         plt.xlabel('Área')
         plt.title('Histograma de áreas de objetos')
+        plt.hist(sizes, bins=[0, 1500, 3000, max(3000, max_area)], edgecolor = [0,0,0])
         plt.savefig(f"hist_areas_{nome}.png")
         
 def hist(img, nome="NaN"):
