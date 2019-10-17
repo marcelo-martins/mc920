@@ -85,12 +85,12 @@ def contour_properties(img, nome="NaN", printHist = "n"): #generate all the prop
         a = ma/2
         b = MA/2
         eccentricity = math.sqrt(pow(a, 2)-pow(b, 2))
-        eccentricity = round(eccentricity/a, 2)
+        eccentricity = round(eccentricity/a, 6)
 
         M = cv2.moments(cont)
         if printHist=="n":
-            print("Região {0:{1}d}: Área: {2:4.0f} Perímetro: {3:10.6f} Excentricidade: {4:10.6f} Solidez: {5:10.6f}"
-                .format(i, 8, area, perimeter, eccentricity, solidity))
+            print("Região {0:d}: Área: {1:4.0f} Perímetro: {2:10.6f} Excentricidade: {3:10.6f} Solidez: {4:10.6f}"
+                .format(i, area, perimeter, eccentricity, solidity))
             
         cx = int(M['m10']/M['m00']) #centroid
         cy = int(M['m01']/M['m00'])
