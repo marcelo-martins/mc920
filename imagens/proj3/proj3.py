@@ -15,16 +15,16 @@ def get_parser():
     parser.add_argument('--option', type=int, choices = range(1,7), default = -1,
                         help = 'Choose option you want to run\n1 : binary\n2 : grayscale\n3 : detect_contours'
                             + '\n4 : generate area, perimeter, eccentricity and solitidy\n'
-                            + '5 : generate area histogram\n6 : generate all expect for grayscale\n')
-    parser.add_argument('--image', default = "objetos3", help = 'Choose name of the PGM image you want to run')
+                            + '5 : generate area histogram\n6 : generate all\n')
+    parser.add_argument('--image', default = "objetos3", help = 'Choose name of the PNG image you want to run')
 
     arguments = parser.parse_args()
     return arguments
 
-def plotAndSave(img, nome = "NaN", func = "NaF"):
+def plotAndSave(img, nome = "NaN", func = "NaF"): #save images
     cv2.imwrite(f"{func}{nome}.png", img)
 
-def binaryImage(img, nome="NaN", generate="y"):
+def binaryImage(img, nome="NaN", generate="y"): #generate binary image
     
     final = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     (thresh, final) = cv2.threshold(final, 254, 255, cv2.THRESH_BINARY)
@@ -33,7 +33,7 @@ def binaryImage(img, nome="NaN", generate="y"):
 
     return final
 
-def grayscales(img, nome="NaN", generate="y"):
+def grayscales(img, nome="NaN", generate="y"): #generate grayscale image
     
     final = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     if generate=="y":
@@ -41,7 +41,7 @@ def grayscales(img, nome="NaN", generate="y"):
 
     return final
 
-def detect_contours(img, nome="NaN", generate="y"):
+def detect_contours(img, nome="NaN", generate="y"): #generate contours
     
     final = binaryImage(img, nome, "n").astype('uint8')
     contours, _ = cv2.findContours(final, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -51,7 +51,7 @@ def detect_contours(img, nome="NaN", generate="y"):
 
     return edges, contours
 
-def contour_properties(img, nome="NaN", printHist = "n"):
+def contour_properties(img, nome="NaN", printHist = "n"): #generate all the properties asked
     _, contours = detect_contours(img, nome, "n")
     edges = binaryImage(img.copy(), nome, "n")
     
@@ -64,7 +64,7 @@ def contour_properties(img, nome="NaN", printHist = "n"):
     sizes = []
     for cont in (reversed(contours)):
         
-        area = cv2.contourArea(cont)
+        area = cv2.contourArea(cont) #area
         if(area<1500):
             peq += 1
         elif(area>=1500 and area<3000):
@@ -75,13 +75,13 @@ def contour_properties(img, nome="NaN", printHist = "n"):
             max_area = area
         sizes.append(area)
 
-        perimeter = cv2.arcLength(cont, True)
+        perimeter = cv2.arcLength(cont, True) #perimeter
         
         hull = cv2.convexHull(cont)
         hull_area = cv2.contourArea(hull)
         solidity = area/hull_area
 
-        (_, _), (MA, ma), _ = cv2.fitEllipse(cont)
+        (_, _), (MA, ma), _ = cv2.fitEllipse(cont) #eccentricity
         a = ma/2
         b = MA/2
         eccentricity = math.sqrt(pow(a, 2)-pow(b, 2))
@@ -91,12 +91,8 @@ def contour_properties(img, nome="NaN", printHist = "n"):
         if printHist=="n":
             print("Região {0:{1}d}: Área: {2:4.0f} Perímetro: {3:10.6f} Excentricidade: {4:10.6f} Solidez: {5:10.6f}"
                 .format(i, 8, area, perimeter, eccentricity, solidity))
-            f=open(f"out_{name}", "a+")
-            f.write("Região {0:{1}d}: Área: {2:4.0f} Perímetro: {3:10.6f} Excentricidade: {4:10.6f} Solidez: {5:10.6f}\n"
-                .format(i, 8, area, perimeter, eccentricity, solidity))
-            f.close()
             
-        cx = int(M['m10']/M['m00'])
+        cx = int(M['m10']/M['m00']) #centroid
         cy = int(M['m01']/M['m00'])
         edges = printIn(edges, nome, cx, cy, i)
         i+=1
@@ -105,17 +101,10 @@ def contour_properties(img, nome="NaN", printHist = "n"):
     
     if(printHist=="n"):
         plotAndSave(edges, nome, "numbers_")
-        f=open(f"out_{name}", "a+")
-        f.write("----------------------------------------------------------------\n")
-        f.close()
     else:
         print("número de regiões pequenas: " + str(peq) + "\nnúmero de regiões médias: " + str(med) + "\nnúmero de regiões grandes: " + str(gra))
-        f=open(f"out_{name}", "a+")
-        f.write("número de regiões pequenas: " + str(peq) + "\nnúmero de regiões médias: " + str(med) + "\nnúmero de regiões grandes: " + str(gra))
-        f.write("\n----------------------------------------------------------------\n")
-        f.close()
 
-        plt.ylabel('Número de objetos')
+        plt.ylabel('Número de objetos') #generate histogram
         plt.xlabel('Área')
         plt.title('Histograma de áreas de objetos')
         plt.hist(sizes, bins=[0, 1500, 3000, max(3000, max_area)], edgecolor = [0,0,0])
@@ -124,7 +113,7 @@ def contour_properties(img, nome="NaN", printHist = "n"):
 def hist(img, nome="NaN"):
     contour_properties(img, nome, "y")
 
-def printIn(img, nome, cx, cy, i):
+def printIn(img, nome, cx, cy, i): #insert numbers on image
     font = cv2.FONT_HERSHEY_SIMPLEX
     writeIn = (cx-6,cy+3)
     fontSize = 0.3
