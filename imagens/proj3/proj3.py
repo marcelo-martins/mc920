@@ -79,7 +79,7 @@ def contour_properties(img, nome="NaN", printHist = "n"): #generate all the prop
         
         hull = cv2.convexHull(cont)
         hull_area = cv2.contourArea(hull)
-        solidity = area/hull_area
+        solidity = area/hull_area #solidity
 
         (_, _), (MA, ma), _ = cv2.fitEllipse(cont) #eccentricity
         a = ma/2
