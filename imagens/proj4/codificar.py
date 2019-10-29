@@ -1,27 +1,44 @@
 import cv2
 import numpy as np
 import sys
+import argparse
+import matplotlib.pyplot as plt
+from argparse import RawTextHelpFormatter
+
+def get_parser():
+    parser = argparse.ArgumentParser(description='Esteanografia', formatter_class=RawTextHelpFormatter)
+    parser.add_argument('--folder', default = 'imagens/',
+                        help='Folder where the image(s) are')
+    parser.add_argument('--msg', help = 'Text file where your message is')
+    parser.add_argument('--bit', type=int, choices = range(0,3), default = 0, help = 'Bit layer where you want to hide your message')
+    parser.add_argument('--image', default = "baboon", help = 'Choose name of the PNG image you want to run')
+    arguments = parser.parse_args()
+    return arguments
 
 def plotAndSave(img, name = "NaN", func = "NaF"):#Save images
     cv2.imwrite(f"{func}{name}.png", img)
 
-def encode(img, msg, name="NaN"):#Encode message char by char
+def encode(img, msg, name="NaN", bit_plane=0):#Encode message char by char
     final = img.copy()
     msg = char_generator(msg)
     
     for y in range(img.shape[0]):
         for x in range(img.shape[1]):
             for rgb in range(3):
-                pixel_val = img[y, x][rgb]
+                pixel_val = img[y, x][rgb]#Pixel value at layer rgb
+                pixel_val_bin = '{0:08b}'.format(pixel_val)#Pixel_val is now binary with 8 bits
+                pixel_bit = pixel_val_bin[7-bit_plane]#Pixel we need to check if it needs to be changed
                 try:
                     char = next(msg)
                     if(char=='1'):
-                        if(pixel_val%2==0):#If even and char==1, we need to sum 1 because the last bit has to be 1
-                            final[y,x][rgb] += 1
-                    else:#If odd and char==0, as above, we need to change last bit to 0 by subtracting 1
+                        if(pixel_bit=='0'):#If there is a 0 instead of a 1, change it
+                            pixel_val_bin = pixel_val_bin[:7-bit_plane] + char + pixel_val_bin[8-bit_plane:]
+                            final[y,x][rgb] = int(pixel_val_bin,2)
+                    else:#Same pattern as above
                         if(char=='0'):
-                            if(pixel_val%2!=0):
-                                final[y,x][rgb] -= 1
+                            if(pixel_bit=='1'):
+                                pixel_val_bin = pixel_val_bin[:7-bit_plane] + char + pixel_val_bin[8-bit_plane:]
+                                final[y,x][rgb] = int(pixel_val_bin,2)
                 except StopIteration:
                     plotAndSave(cv2.cvtColor(final, cv2.COLOR_RGB2BGR), name, "encoded_")
                     return final
@@ -37,13 +54,27 @@ def get_contents(text):#Read file
         f.close()
     return contents
 
+def generate_bitplane(im_out, title = ""):  
+    plt.axis("off")
+    plt.title(title)
+    plt.imshow(im_out, cmap="gray", vmin=0, vmax=255)
+
+    plt.waitforbuttonpress(0)
+    plt.close("all")
+
+    cv2.imwrite(title + ".png", im_out)
+
 def Main():
     #Reading image and text file
-    image_name = sys.argv[1]
-    text = sys.argv[2]
+    arguments = get_parser()
+    image_name = arguments.image
+    text = arguments.msg
+    bit_plane = int(arguments.bit)
 
     if '.png' not in image_name:
         image_name += '.png'
+    if '.txt' not in text:
+        text += '.txt'
     
     contents = get_contents(text)#Getting contents of file to know if there's a \0 at the end to know when to stop
     
@@ -67,9 +98,23 @@ def Main():
         raise ValueError('There is no room to encode your whole message!')
 
     image_name = image_name[:-4]
-    encode(img, msg, image_name)
+    img_encoded = encode(img, msg, image_name, bit_plane)
 
     print(f"Sucessfully encoded {image_name}.png!")
+
+    sets = set([0,1,2,7])
+    matrixR, matrixG, matrixB = cv2.split(img_encoded)
+    for plane in range(0, 8):
+        r_out = (matrixR >> plane) & 1
+        g_out = (matrixG >> plane) & 1
+        b_out = (matrixB >> plane) & 1
+        if(plane in sets):
+            title = f"r_{plane}_hidein_{bit_plane}_"
+            plotAndSave(np.where(r_out, 255, 0), image_name, title)
+            title = f"g_{plane}_hidein_{bit_plane}_"
+            plotAndSave(np.where(g_out, 255, 0), image_name, title)
+            title = f"b_{plane}_hidein_{bit_plane}_"
+            plotAndSave(np.where(b_out, 255, 0), image_name, title)
 
 if __name__ == '__main__':
     Main()
