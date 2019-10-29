@@ -17,7 +17,7 @@ def get_parser():
     return arguments
 
 
-def convert_string(msg, text, bit_plane):
+def convert_string(msg, text, bit_plane, image_name):
     msg = wrap(msg, 8)#Split the whole string into 8 bit chunks
     decoded_msg = []
 
@@ -28,12 +28,12 @@ def convert_string(msg, text, bit_plane):
     print("The decoded message is: ")
     print(decoded_msg)#Final print
     
-    f = open(f"{bit_plane}_" + text, "w+")
+    f = open(f"{bit_plane}_{image_name}" + text, "w+")
     f.write(decoded_msg)
     f.close()
 
 
-def decode(img, text, bit_plane=0):
+def decode(img, text, bit_plane=0, image_name="baboon"):
     msg_bin = []
     count=0
     for y in range(img.shape[0]):
@@ -47,7 +47,7 @@ def decode(img, text, bit_plane=0):
                     if(count>=9 and len(msg_bin)%8==0):
                         msg_bin = msg_bin[:-8]
                         msg_bin = ''.join(msg_bin)#Concatenate everything when finding 8 straight 0's representing '\0'
-                        convert_string(msg_bin, text, bit_plane)
+                        convert_string(msg_bin, text, bit_plane, image_name)
                         return
                 else:
                     msg_bin.append('1')
@@ -68,7 +68,7 @@ def Main():
     img = cv2.imread("encoded_" + image_name, cv2.IMREAD_COLOR)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)#Now it is RGB
   
-    decode(img, text, bit_plane)
+    decode(img, text, bit_plane, image_name)
 
 if __name__ == '__main__':
     Main()
