@@ -40,7 +40,7 @@ def encode(img, msg, name="NaN", bit_plane=0):#Encode message char by char
                                 pixel_val_bin = pixel_val_bin[:7-bit_plane] + char + pixel_val_bin[8-bit_plane:]
                                 final[y,x][rgb] = int(pixel_val_bin,2)
                 except StopIteration:
-                    plotAndSave(cv2.cvtColor(final, cv2.COLOR_RGB2BGR), name, "encoded_")
+                    plotAndSave(cv2.cvtColor(final, cv2.COLOR_RGB2BGR), name, f"encoded_{bit_plane}_")
                     return final
 
 def char_generator(msg):#Generate each character of image when needed
