@@ -6,12 +6,15 @@ import matplotlib.pyplot as plt
 from argparse import RawTextHelpFormatter
 from numpy.linalg import svd
 import os
+import warnings
+
+warnings.simplefilter("ignore")
 
 def get_parser():
     parser = argparse.ArgumentParser(description='PCA', formatter_class=RawTextHelpFormatter)
     parser.add_argument('--folder', default = 'images/',
                         help='Folder where the image(s) are')
-    parser.add_argument('--k', help = 'Components number')
+    parser.add_argument('--k', default = 10, help = 'Components number')
     parser.add_argument('--out', default = 'generated', help='Out folder')
     parser.add_argument('--image', default = "baboon", help = 'Choose name of the PNG image you want to run')
     parser.add_argument('--all', default='n', help = 'Components number')
@@ -27,12 +30,12 @@ def get_compress_rate(out_folder, image_name, k_image, folder):
     rate = compressed_size/not_compressed_size
     print(f"K = {k_image}")
     print("Compress rate = {0:1.4f}".format(rate))
-    return "{0:1.4f}".format(rate)
+    return round(rate,2)
 
 def get_rmse(img, final):
     rmse = np.sqrt(np.mean(np.square(img.astype('float') - final.astype('float'))))
     print("Root mean square error(RSME) = {0:4.5f}\n".format(rmse))
-    return "{0:4.5f}".format(rmse)
+    return round(rmse, 2)
 
 def PCA(image_name, k_image, folder, out_folder):
     if '.png' not in image_name:
@@ -52,6 +55,7 @@ def PCA(image_name, k_image, folder, out_folder):
         print(f"Warning: your chosen K is higher than expected, only {k_real} components are going to be used")
         k_image = k_real
 
+    #Merge components
     u_total = cv2.merge((r_u, g_u, b_u))
     s_total = cv2.merge((np.diag(r_s), np.diag(g_s), np.diag(b_s)))
     v_total = cv2.merge((r_v, g_v, b_v))
@@ -66,6 +70,7 @@ def PCA(image_name, k_image, folder, out_folder):
     gus = np.matmul(u_final[:, :, 1], s_final[:, :, 1])
     rus = np.matmul(u_final[:, :, 2], s_final[:, :, 2])
 
+    #Multiply everything
     b_final = np.matmul(bus, v_final[:, :, 0])
     g_final = np.matmul(gus, v_final[:, :, 1])
     r_final = np.matmul(rus, v_final[:, :, 2])
@@ -101,7 +106,7 @@ def Main():
     
     sizes = [1, 5, 10, 20, 30, 40, 50]
     maximum = 100
-    while(maximum<=max(img.shape[0], img.shape[1]) - 400): ###################################################
+    while(maximum<=max(img.shape[0], img.shape[1])):
         sizes.append(maximum)
         maximum += 100
     
@@ -110,29 +115,22 @@ def Main():
     for i in sizes:
         compress_ret, rmse_ret = PCA(image_name, i, folder, out_folder)
         compress_data.append(compress_ret)
-        rmse_data.append(rmse_ret)
-
-    print(compress_data)
-    print(rmse_data)
-
-    #rmse_data = rmse_data[::-1]
+        rmse_data.append((rmse_ret))
 
     image_name = image_name[:-4]
-    # fig, ax = plt.subplots()
-    # ax.plot(sizes, compress_data)
-    # ax.set(xlabel='k', ylabel='compress_rate')
-    # plt.savefig(out_folder + f"/{image_name}_compress_graph")
-    # plt.show()
-
-    print("alo")
-    print(sizes)
-    print(rmse_data)
+    
+    #Generate compress rate graph
+    fig, ax = plt.subplots()
+    plt.title(f"Compress rate {image_name}")
+    ax.plot(sizes, compress_data)
+    ax.set(xlabel='k', ylabel='compress rate')
+    plt.savefig(out_folder + f"/{image_name}_compress_graph")
 
     fig, ax = plt.subplots()
+    plt.title(f"RMSE {image_name}")
     ax.plot(sizes, rmse_data)
     ax.set(xlabel='k', ylabel='rmse')
     plt.savefig(out_folder + f"/{image_name}_rmse_graph")
-    plt.show()
 
 if __name__ == '__main__':
     Main()
